@@ -1,0 +1,26 @@
+# Render Blueprint: one-click deploy for RinkRent
+# https://dashboard.render.com/blueprints → New Blueprint Instance → connect this repo
+databases:
+  - name: rinkrent-db
+    plan: free
+    databaseName: rinkrent
+    user: rinkrent
+
+services:
+  - type: web
+    plan: free
+    name: rinkrent
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: rinkrent-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "false"
+      # Add these in Render Dashboard after first deploy:
+      # STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET

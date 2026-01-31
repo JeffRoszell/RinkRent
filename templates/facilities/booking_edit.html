@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Edit booking – RinkRent{% endblock %}
+{% block content %}
+<div class="max-w-lg">
+  <h1 class="text-2xl font-bold mb-4">Edit booking</h1>
+  <p class="opacity-80 mb-4">{{ booking.slot.ice_surface.name }} – {{ booking.slot.start|date:"M j, Y" }} {{ booking.slot.start|time }}–{{ booking.slot.end|time }}. Booked by {{ booking.user.get_full_name|default:booking.user.username }}.</p>
+  <form method="post" class="card bg-base-200 shadow">
+    <div class="card-body">
+      {% csrf_token %}
+      <div class="form-control">
+        <label class="label" for="organization_name">Organization / team</label>
+        <input type="text" name="organization_name" id="organization_name" class="input input-bordered w-full" value="{{ booking.organization_name }}">
+      </div>
+      <div class="form-control">
+        <label class="label" for="sport">Sport</label>
+        <select name="sport" id="sport" class="select select-bordered w-full">
+          {% for value, label in booking.SPORT_CHOICES %}
+            <option value="{{ value }}" {% if booking.sport == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="card-actions justify-end mt-4">
+        <a href="{% url 'facilities:slot_list' %}" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

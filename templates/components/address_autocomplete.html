@@ -1,0 +1,100 @@
+{% comment %}
+Optional Mapbox Geocoding autocomplete. Set MAPBOX_ACCESS_TOKEN in .env to enable.
+Fills: address_line1, address_line2, city, province, postal_code (by id: id_address_line1, etc.)
+{% endcomment %}
+{% if mapbox_access_token %}
+<div class="form-control mt-2 relative">
+  <label class="label">
+    <span class="label-text">Or search address (Mapbox)</span>
+  </label>
+  <input type="text" id="place-autocomplete" class="input input-bordered w-full" placeholder="Start typing an address..." autocomplete="off">
+  <div id="place-autocomplete-list" class="hidden absolute z-10 left-0 right-0 mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg max-h-60 overflow-auto"></div>
+</div>
+<script>
+(function() {
+  var token = "{{ mapbox_access_token|escapejs }}";
+  var input = document.getElementById('place-autocomplete');
+  var listEl = document.getElementById('place-autocomplete-list');
+  if (!input || !token) return;
+
+  var debounceTimer;
+  var selectedIndex = -1;
+
+  function parseFeature(feature) {
+    var address = (feature.address || '').trim();
+    var text = (feature.text || '').trim();
+    var addressLine1 = [address, text].filter(Boolean).join(' ') || (feature.place_name || '').split(',')[0] || '';
+    var city = '', province = '', postal = '';
+    if (feature.context) {
+      feature.context.forEach(function(c) {
+        if (c.id && c.id.indexOf('postcode') === 0) postal = c.text || '';
+        if (c.id && c.id.indexOf('place') === 0) city = c.text || '';
+        if (c.id && c.id.indexOf('region') === 0) province = c.text || '';
+      });
+    }
+    return { addressLine1: addressLine1, city: city, province: province, postal: postal };
+  }
+
+  function fillForm(parsed) {
+    var el;
+    if ((el = document.getElementById('id_address_line1'))) el.value = parsed.addressLine1;
+    if ((el = document.getElementById('id_address_line2'))) el.value = '';
+    if ((el = document.getElementById('id_city'))) el.value = parsed.city;
+    if ((el = document.getElementById('id_province'))) el.value = parsed.province;
+    if ((el = document.getElementById('id_postal_code'))) el.value = parsed.postal;
+  }
+
+  function showSuggestions(features) {
+    listEl.innerHTML = '';
+    listEl.classList.remove('hidden');
+    selectedIndex = -1;
+    if (!features.length) {
+      listEl.classList.add('hidden');
+      return;
+    }
+    features.forEach(function(f, i) {
+      var div = document.createElement('div');
+      div.className = 'px-4 py-2 cursor-pointer hover:bg-base-200 border-b border-base-300 last:border-b-0';
+      div.textContent = f.place_name;
+      div.dataset.index = i;
+      div.addEventListener('click', function() {
+        var parsed = parseFeature(features[parseInt(this.dataset.index, 10)]);
+        fillForm(parsed);
+        input.value = features[parseInt(this.dataset.index, 10)].place_name;
+        listEl.classList.add('hidden');
+        listEl.innerHTML = '';
+      });
+      listEl.appendChild(div);
+    });
+  }
+
+  function onInput() {
+    var q = input.value.trim();
+    if (q.length < 3) {
+      listEl.classList.add('hidden');
+      listEl.innerHTML = '';
+      return;
+    }
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function() {
+      var url = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(q) + '.json?access_token=' + token + '&country=CA,US&types=address,place&limit=5';
+      fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+        showSuggestions(data.features || []);
+      }).catch(function() {
+        listEl.classList.add('hidden');
+      });
+    }, 200);
+  }
+
+  input.addEventListener('input', onInput);
+  input.addEventListener('focus', function() { if (listEl.children.length) listEl.classList.remove('hidden'); });
+  input.addEventListener('blur', function() {
+    setTimeout(function() { listEl.classList.add('hidden'); }, 200);
+  });
+
+  document.addEventListener('click', function(e) {
+    if (e.target !== input && e.target !== listEl && !listEl.contains(e.target)) listEl.classList.add('hidden');
+  });
+})();
+</script>
+{% endif %}

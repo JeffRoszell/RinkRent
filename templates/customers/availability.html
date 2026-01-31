@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Availability – {{ surface.name }} – RinkRent{% endblock %}
+{% block content %}
+<div class="flex flex-col gap-6">
+  <h1 class="text-3xl font-bold">{{ facility.name }} – {{ surface.name }}</h1>
+  {% if date_str %}
+    <p class="opacity-80">Available slots for {{ date_str }}. ${{ surface.default_rate }} per hour.</p>
+  {% else %}
+    <p class="opacity-80">Pick a date to see available slots.</p>
+  {% endif %}
+
+  <form method="get" action="{% url 'customers:availability' facility.pk surface.pk %}" class="flex gap-2 items-end">
+    <div class="form-control">
+      <label class="label" for="date">Date</label>
+      <input type="date" name="date" id="date" class="input input-bordered" value="{{ date_str }}" min="{{ min_date|default:'' }}" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Show slots</button>
+  </form>
+
+  {% if date_str %}
+    {% if slots %}
+      <form method="get" action="{% url 'customers:book' %}" class="card bg-base-200 shadow">
+        <div class="card-body">
+          <h2 class="card-title">Select slot(s) to book</h2>
+          <p class="text-sm opacity-80">You can select multiple consecutive slots for longer ice time.</p>
+          <div class="flex flex-col gap-2 mt-4">
+            {% for slot in slots %}
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="slot" value="{{ slot.pk }}" class="checkbox">
+                <span>{{ slot.start|time }}–{{ slot.end|time }} — ${{ slot.rate }}</span>
+              </label>
+            {% endfor %}
+          </div>
+          <div class="card-actions mt-4">
+            <button type="submit" class="btn btn-primary">Continue to book</button>
+          </div>
+          <p class="text-sm opacity-80">You must be logged in to book. If not, you will be redirected to log in.</p>
+        </div>
+      </form>
+    {% else %}
+      <p class="opacity-80">No available slots for this date. The facility may not have hours set for this weekday, or slots may not have been generated yet. Try another date or facility.</p>
+    {% endif %}
+  {% endif %}
+
+  <p><a href="{% url 'customers:facility_detail' facility.pk %}" class="link">Back to {{ facility.name }}</a></p>
+</div>
+{% endblock %}

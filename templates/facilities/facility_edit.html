@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Edit facility – RinkRent{% endblock %}
+{% block content %}
+<div class="max-w-lg">
+  <h1 class="text-2xl font-bold mb-4">Edit facility</h1>
+  <div class="card bg-base-200 shadow mb-6">
+    <div class="card-body">
+      <h2 class="card-title">Payment account</h2>
+      {% if facility.stripe_account_id %}
+        <p class="opacity-80">Stripe Connect is connected. Payouts will go to your linked account.</p>
+      {% else %}
+        <p class="opacity-80">Connect Stripe to receive payments for bookings.</p>
+        <a href="{% url 'facilities:stripe_connect_start' %}" class="btn btn-primary">Connect Stripe</a>
+      {% endif %}
+    </div>
+  </div>
+  <form method="post" class="card bg-base-200 shadow" autocomplete="on">
+    <div class="card-body">
+      {% csrf_token %}
+      <div class="form-control">
+        <label class="label" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+        {{ form.name }}
+        {% if form.name.errors %}<p class="text-error text-sm">{{ form.name.errors.0 }}</p>{% endif %}
+      </div>
+      <div class="form-control">
+        <label class="label" for="{{ form.address_line1.id_for_label }}">{{ form.address_line1.label }}</label>
+        {{ form.address_line1 }}
+        {% if form.address_line1.errors %}<p class="text-error text-sm">{{ form.address_line1.errors.0 }}</p>{% endif %}
+      </div>
+      <div class="form-control">
+        <label class="label" for="{{ form.address_line2.id_for_label }}">{{ form.address_line2.label }}</label>
+        {{ form.address_line2 }}
+        {% if form.address_line2.errors %}<p class="text-error text-sm">{{ form.address_line2.errors.0 }}</p>{% endif %}
+      </div>
+      <div class="flex flex-wrap gap-4">
+        <div class="form-control flex-1 min-w-[140px]">
+          <label class="label" for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
+          {{ form.city }}
+          {% if form.city.errors %}<p class="text-error text-sm">{{ form.city.errors.0 }}</p>{% endif %}
+        </div>
+        <div class="form-control flex-1 min-w-[140px]">
+          <label class="label" for="{{ form.province.id_for_label }}">{{ form.province.label }}</label>
+          {{ form.province }}
+          {% if form.province.errors %}<p class="text-error text-sm">{{ form.province.errors.0 }}</p>{% endif %}
+        </div>
+        <div class="form-control w-32">
+          <label class="label" for="{{ form.postal_code.id_for_label }}">{{ form.postal_code.label }}</label>
+          {{ form.postal_code }}
+          {% if form.postal_code.errors %}<p class="text-error text-sm">{{ form.postal_code.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+      <div class="form-control">
+        <label class="label" for="{{ form.timezone.id_for_label }}">{{ form.timezone.label }}</label>
+        {{ form.timezone }}
+        {% if form.timezone.errors %}<p class="text-error text-sm">{{ form.timezone.errors.0 }}</p>{% endif %}
+      </div>
+      {% include "components/address_autocomplete.html" with mapbox_access_token=mapbox_access_token %}
+
+      <div class="divider my-6">What we offer</div>
+      <p class="text-sm text-base-content/70 mb-3">Check amenities customers will see when searching and booking.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.handicap_accessible }}
+          <span>{{ form.handicap_accessible.label }}</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.food_and_beverage }}
+          <span>{{ form.food_and_beverage.label }}</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.licensed }}
+          <span>{{ form.licensed.label }}</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.gym_weight_room }}
+          <span>{{ form.gym_weight_room.label }}</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.change_rooms }}
+          <span>{{ form.change_rooms.label }}</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.parking }}
+          <span>{{ form.parking.label }}</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.pro_shop }}
+          <span>{{ form.pro_shop.label }}</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.wifi }}
+          <span>{{ form.wifi.label }}</span>
+        </label>
+      </div>
+      {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+
+      <div class="card-actions justify-end mt-6">
+        <a href="{% url 'facilities:dashboard' %}" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

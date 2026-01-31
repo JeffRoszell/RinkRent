@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}{{ facility.name }} – RinkRent{% endblock %}
+{% block content %}
+<div class="flex flex-col gap-6">
+  <h1 class="text-3xl font-bold">{{ facility.name }}</h1>
+  <p class="opacity-80">{{ facility.get_full_address|default:"No address" }}</p>
+  {% if facility.get_amenities_list %}
+    <div class="flex flex-wrap gap-2">
+      <span class="text-sm text-base-content/70 font-medium">Amenities:</span>
+      {% for amenity in facility.get_amenities_list %}
+        <span class="badge badge-outline badge-sm">{{ amenity }}</span>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="card bg-base-200 shadow">
+    <div class="card-body">
+      <h2 class="card-title">Select surface and date</h2>
+      <form method="get" action="{% url 'customers:facility_detail' facility.pk %}" class="flex flex-wrap gap-4 items-end">
+        <div class="form-control">
+          <label class="label" for="surface">Surface</label>
+          <select name="surface" id="surface" class="select select-bordered" required>
+            <option value="">Choose a surface</option>
+            {% for s in surfaces %}
+              <option value="{{ s.pk }}" {% if surface and surface.pk == s.pk %}selected{% endif %}>{{ s.name }} — ${{ s.default_rate }}/hr</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-control">
+          <label class="label" for="date">Date</label>
+          <input type="date" name="date" id="date" class="input input-bordered" value="{{ date_str }}" min="{{ min_date }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Show slots</button>
+      </form>
+    </div>
+  </div>
+
+  {% if surface and date_str %}
+    <div class="flex flex-col gap-4">
+      <h2 class="text-xl font-semibold">{{ surface.name }} — {{ date_str }}</h2>
+      <p class="opacity-80">${{ surface.default_rate }} per hour. Click an available slot to select it, then continue to book.</p>
+
+      {% if all_slots %}
+        <form method="get" action="{% url 'customers:book' %}" id="book-form" class="flex flex-col items-center">
+          <div class="flex flex-col gap-1 w-full max-w-md">
+            {% for slot in all_slots %}
+              {% if slot.state == "available" %}
+                <label class="slot-option cursor-pointer">
+                  <input type="checkbox" name="slot" value="{{ slot.pk }}" class="slot-checkbox peer sr-only">
+                  <div class="card bg-primary text-primary-content shadow hover:shadow-md transition peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-offset-base-100 peer-checked:ring-4 peer-checked:ring-secondary">
+                    <div class="card-body py-2 px-4 flex flex-row items-center justify-between gap-2">
+                      <span class="font-medium">{{ slot.start|time }}–{{ slot.end|time }}</span>
+                      <span class="text-sm opacity-90">${{ slot.rate }}</span>
+                      <span class="text-xs opacity-75">Available</span>
+                    </div>
+                  </div>
+                </label>
+              {% else %}
+                <div class="card bg-base-300 shadow opacity-75 cursor-not-allowed">
+                  <div class="card-body py-2 px-4 flex flex-row items-center justify-between gap-2">
+                    <span class="font-medium">{{ slot.start|time }}–{{ slot.end|time }}</span>
+                    <span class="text-sm">
+                      {% if slot.booking %}Booked{% elif slot.manual_reservation %}Reserved{% else %}{{ slot.get_state_display }}{% endif %}
+                    </span>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <div class="mt-4 flex items-center gap-4">
+            <button type="submit" class="btn btn-primary" id="continue-btn" disabled>Continue to book</button>
+            <span class="text-sm opacity-80" id="selected-count">Select one or more slots</span>
+          </div>
+        </form>
+      {% else %}
+        <p class="opacity-80">No slots for this date. The facility may not have hours set for this weekday. Try another date.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <p><a href="{% url 'customers:search' %}" class="link">Back to search</a></p>
+</div>
+{% block extra_js %}
+<script>
+(function() {
+  var form = document.getElementById('book-form');
+  var btn = document.getElementById('continue-btn');
+  var countEl = document.getElementById('selected-count');
+  if (!form || !btn) return;
+  var checkboxes = form.querySelectorAll('.slot-checkbox');
+  function updateState() {
+    var n = form.querySelectorAll('.slot-checkbox:checked').length;
+    btn.disabled = n === 0;
+    countEl.textContent = n === 0 ? 'Select one or more slots' : (n === 1 ? '1 slot selected' : n + ' slots selected');
+  }
+  checkboxes.forEach(function(cb) {
+    cb.addEventListener('change', updateState);
+  });
+  updateState();
+})();
+</script>
+{% endblock %}
+{% endblock %}

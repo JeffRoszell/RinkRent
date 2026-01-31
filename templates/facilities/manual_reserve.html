@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Manual reservation – RinkRent{% endblock %}
+{% block content %}
+<div class="max-w-lg">
+  <h1 class="text-2xl font-bold mb-4">Manual reservation</h1>
+  <p class="opacity-80 mb-4">{{ slot.ice_surface.name }} – {{ slot.start|date:"M j, Y" }} {{ slot.start|time }}–{{ slot.end|time }} (${{ slot.rate }})</p>
+  <form method="post" class="card bg-base-200 shadow">
+    <div class="card-body">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-control">
+          <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<p class="text-error text-sm">{{ field.errors.0 }}</p>{% endif %}
+        </div>
+      {% endfor %}
+      <div class="card-actions justify-end mt-4">
+        <a href="{% url 'facilities:slot_list' %}" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Reserve</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

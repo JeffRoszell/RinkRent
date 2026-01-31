@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}RinkRent – Find ice time{% endblock %}
+{% block content %}
+<div class="hero min-h-[60vh] bg-base-200 rounded-lg">
+  <div class="hero-content text-center">
+    <div class="max-w-lg">
+      <h1 class="text-5xl font-bold">RinkRent</h1>
+      <p class="py-6">Find and book ice time for hockey, ringette, and other ice sports.</p>
+      <div class="flex flex-col gap-4 mt-4">
+        <div>
+          <p class="font-semibold mb-2">I want to book ice</p>
+          <a href="{% url 'customers:search' %}" class="btn btn-primary">Find ice time</a>
+          <a href="{% url 'core:register' %}" class="btn btn-outline ml-2">Sign up</a>
+          <a href="{% url 'core:login' %}" class="btn btn-ghost ml-2">Log in</a>
+        </div>
+        <div class="divider">or</div>
+        <div>
+          <p class="font-semibold mb-2">I manage a rink</p>
+          <a href="{% url 'facilities:register' %}" class="btn btn-secondary">Register your rink</a>
+          <a href="{% url 'core:login' %}" class="btn btn-outline ml-2">Facility log in</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

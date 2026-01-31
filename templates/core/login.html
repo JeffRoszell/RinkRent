@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Log in – RinkRent{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto card bg-base-200 shadow-xl">
+  <div class="card-body">
+    <h2 class="card-title">Log in</h2>
+    <p class="text-sm opacity-80">Same login for customers and facility managers. You’ll be taken to the right place after signing in.</p>
+    <form method="post" action="{% url 'core:login' %}">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-control w-full">
+          <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<p class="text-error text-sm">{{ field.errors.0 }}</p>{% endif %}
+        </div>
+      {% endfor %}
+      <div class="form-control mt-4">
+        <button type="submit" class="btn btn-primary">Log in</button>
+      </div>
+    </form>
+    <p class="text-sm mt-4">No account? <a href="{% url 'core:register' %}" class="link">Sign up to book ice</a> · <a href="{% url 'facilities:register' %}" class="link">Register your rink</a></p>
+  </div>
+</div>
+{% endblock %}

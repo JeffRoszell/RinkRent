@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Slots & bookings – RinkRent{% endblock %}
+{% block content %}
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">Slots & bookings</h1>
+      <p class="text-sm text-base-content/70 mt-1">Filter by surface and week. Release or edit bookings; add manual reservations for walk-in/phone.</p>
+    </div>
+    <form method="get" class="flex flex-wrap gap-4 sm:flex-nowrap sm:items-end" id="filter-form">
+      <div class="form-control w-full sm:w-auto sm:min-w-[120px]">
+        <label class="label py-0 pb-1 min-h-0 justify-start text-xs font-medium text-base-content/70" for="surface">Surface</label>
+        <select name="surface" id="surface" class="select select-bordered select-sm w-full sm:w-auto">
+          <option value="">All</option>
+          {% for s in surfaces %}
+            <option value="{{ s.pk }}" {% if surface_id == s.pk %}selected{% endif %}>{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-control w-full sm:w-auto">
+        <label class="label py-0 pb-1 min-h-0 justify-start text-xs font-medium text-base-content/70">Week</label>
+        <div class="flex items-center gap-1.5 h-8">
+          {% if week_start and week_end %}
+            <input type="hidden" name="week" id="week" value="{{ week_str }}">
+            <a href="?week={{ prev_week_str }}{% if surface_id %}&amp;surface={{ surface_id }}{% endif %}{% if state_filter %}&amp;state={{ state_filter }}{% endif %}" class="btn btn-ghost btn-sm btn-square h-8 w-8 shrink-0" aria-label="Previous week">‹</a>
+            <div class="dropdown dropdown-end flex-1 min-w-0">
+              <label tabindex="0" class="btn btn-outline btn-sm h-8 min-h-8 min-w-[200px] justify-between gap-2 font-normal" id="week-display">
+                {{ week_start|date:"D, M j" }} – {{ week_end|date:"D, M j, Y" }}
+              </label>
+              <div tabindex="0" class="dropdown-content z-10 p-4 bg-base-200 rounded-xl border border-base-300 shadow-lg mt-2">
+                {% if calendar_month_label %}
+                  <p class="text-sm font-medium mb-2">{{ calendar_month_label|date:"F Y" }}</p>
+                  <table class="table table-xs border-separate border-spacing-0.5">
+                    <thead>
+                      <tr><th class="text-center text-xs">S</th><th class="text-center text-xs">M</th><th class="text-center text-xs">T</th><th class="text-center text-xs">W</th><th class="text-center text-xs">T</th><th class="text-center text-xs">F</th><th class="text-center text-xs">S</th></tr>
+                    </thead>
+                    <tbody>
+                      {% for row_dates, row_week_str, is_selected in calendar_weeks %}
+                        <tr class="{% if is_selected %}bg-primary/20{% endif %}">
+                          {% for d in row_dates %}
+                            <td class="text-center p-0.5">
+                              <a href="?week={{ row_week_str }}{% if surface_id %}&amp;surface={{ surface_id }}{% endif %}{% if state_filter %}&amp;state={{ state_filter }}{% endif %}" class="block rounded px-1.5 py-0.5 text-sm hover:bg-base-300 {% if is_selected %}font-semibold text-primary{% endif %}">{{ d.day }}</a>
+                            </td>
+                          {% endfor %}
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                {% endif %}
+              </div>
+            </div>
+            <a href="?week={{ next_week_str }}{% if surface_id %}&amp;surface={{ surface_id }}{% endif %}{% if state_filter %}&amp;state={{ state_filter }}{% endif %}" class="btn btn-ghost btn-sm btn-square h-8 w-8 shrink-0" aria-label="Next week">›</a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="form-control w-full sm:w-auto sm:min-w-[100px]">
+        <label class="label py-0 pb-1 min-h-0 justify-start text-xs font-medium text-base-content/70" for="state">State</label>
+        <select name="state" id="state" class="select select-bordered select-sm w-full sm:w-auto">
+          <option value="">All</option>
+          <option value="available" {% if state_filter == "available" %}selected{% endif %}>Available</option>
+          <option value="booked" {% if state_filter == "booked" %}selected{% endif %}>Booked</option>
+          <option value="manually_reserved" {% if state_filter == "manually_reserved" %}selected{% endif %}>Manual</option>
+          <option value="blocked" {% if state_filter == "blocked" %}selected{% endif %}>Blocked</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm h-8 shrink-0">Filter</button>
+    </form>
+  </div>
+
+  <div class="flex flex-col gap-3" id="slot-day-accordion">
+    {% for date, day_slots in slots_by_date %}
+      <details class="slot-day-details group rounded-xl border border-base-300 bg-base-200/60 overflow-hidden" {% if forloop.first %}open{% endif %}>
+        <summary class="list-none cursor-pointer [&::-webkit-details-marker]:hidden">
+          <div class="flex items-center justify-between gap-2 px-4 py-3 hover:bg-base-300/50 transition-colors">
+            <span class="font-semibold text-base">
+              {{ date|date:"l, M j, Y" }}
+            </span>
+            <span class="badge badge-ghost badge-sm">{{ day_slots|length }} slot{{ day_slots|length|pluralize }}</span>
+            <svg class="w-5 h-5 shrink-0 transition-transform group-open:rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </summary>
+        <div class="border-t border-base-300">
+          <div class="overflow-x-auto">
+            <table class="table table-sm table-zebra">
+              <thead>
+                <tr>
+                  <th>Surface</th>
+                  <th>Start</th>
+                  <th>End</th>
+                  <th>Rate</th>
+                  <th>State</th>
+                  <th>Details</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for slot in day_slots %}
+                  <tr>
+                    <td>{{ slot.ice_surface.name }}</td>
+                    <td>{{ slot.start|time }}</td>
+                    <td>{{ slot.end|time }}</td>
+                    <td>${{ slot.rate }}</td>
+                    <td>
+                      <span class="badge badge-sm badge-{% if slot.state == 'available' %}success{% elif slot.state == 'booked' %}primary{% else %}neutral{% endif %}">
+                        {{ slot.get_state_display }}
+                      </span>
+                    </td>
+                    <td>
+                      {% if slot.booking %}
+                        {{ slot.booking.user.get_full_name|default:slot.booking.user.username }} – {{ slot.booking.organization_name|default:"—" }} ({{ slot.booking.get_sport_display }})
+                      {% elif slot.manual_reservation %}
+                        {{ slot.manual_reservation.organization_name }}
+                      {% else %}
+                        —
+                      {% endif %}
+                    </td>
+                    <td class="flex gap-2 flex-wrap">
+                      {% if slot.state == "available" %}
+                        <a href="{% url 'facilities:manual_reserve' slot.pk %}" class="btn btn-ghost btn-xs">Manual reserve</a>
+                      {% endif %}
+                      {% if slot.booking %}
+                        <a href="{% url 'facilities:booking_edit' slot.booking.pk %}" class="btn btn-ghost btn-xs">Edit</a>
+                      {% endif %}
+                      {% if slot.state in "booked,manually_reserved" %}
+                        <form method="post" action="{% url 'facilities:slot_release' slot.pk %}" class="inline">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-ghost btn-xs text-error">Release</button>
+                        </form>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+    {% empty %}
+      <div class="rounded-xl border border-dashed border-base-300 bg-base-200/50 p-8 text-center text-base-content/70">
+        <p>No slots match. Generate slots (management command) and/or adjust filters.</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% block extra_js %}
+<script>
+(function() {
+  var accordion = document.getElementById('slot-day-accordion');
+  if (!accordion) return;
+  var detailsList = accordion.querySelectorAll('.slot-day-details');
+  detailsList.forEach(function(details) {
+    details.addEventListener('toggle', function() {
+      if (!details.open) return;
+      detailsList.forEach(function(other) {
+        if (other !== details) other.open = false;
+      });
+    });
+  });
+})();
+</script>
+{% endblock %}
+{% endblock %}

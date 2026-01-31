@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Facility dashboard – RinkRent{% endblock %}
+{% block content %}
+<div class="flex flex-col gap-6">
+  <h1 class="text-3xl font-bold">{{ facility.name }}</h1>
+  <p class="opacity-80">{{ facility.get_full_address|default:"No address set." }}</p>
+
+  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <a href="{% url 'facilities:facility_edit' %}" class="card bg-base-200 shadow hover:shadow-lg transition">
+      <div class="card-body">
+        <h2 class="card-title">Facility profile</h2>
+        <p>Edit name, address, timezone, and payment account.</p>
+      </div>
+    </a>
+    <a href="{% url 'facilities:surface_list' %}" class="card bg-base-200 shadow hover:shadow-lg transition">
+      <div class="card-body">
+        <h2 class="card-title">Ice surfaces</h2>
+        <p>Manage surfaces, hours of operation, and rates.</p>
+      </div>
+    </a>
+    <a href="{% url 'facilities:slot_list' %}" class="card bg-base-200 shadow hover:shadow-lg transition">
+      <div class="card-body">
+        <h2 class="card-title">Slots & bookings</h2>
+        <p>View slots, manual reservations, and edit bookings.</p>
+      </div>
+    </a>
+  </div>
+</div>
+{% endblock %}

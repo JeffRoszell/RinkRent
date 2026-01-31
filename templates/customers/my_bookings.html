@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}My bookings – RinkRent{% endblock %}
+{% block content %}
+<div class="flex flex-col gap-6">
+  <h1 class="text-3xl font-bold">My bookings</h1>
+
+  <h2 class="text-xl font-semibold">Upcoming</h2>
+  {% if upcoming %}
+    <div class="overflow-x-auto">
+      <table class="table table-zebra">
+        <thead>
+          <tr>
+            <th>Facility</th>
+            <th>Surface</th>
+            <th>Date & time</th>
+            <th>Organization</th>
+            <th>Sport</th>
+            <th>Amount</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in upcoming %}
+            <tr>
+              <td>{{ b.slot.ice_surface.facility.name }}</td>
+              <td>{{ b.slot.ice_surface.name }}</td>
+              <td>{{ b.slot.start|date:"M j, Y" }} {{ b.slot.start|time }}–{{ b.slot.end|time }}</td>
+              <td>{{ b.organization_name|default:"—" }}</td>
+              <td>{{ b.get_sport_display }}</td>
+              <td>${{ b.slot.rate }}</td>
+              <td>
+                <form method="post" action="{% url 'customers:booking_cancel' b.pk %}" class="inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-ghost btn-sm text-error">Cancel</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="opacity-80">No upcoming bookings.</p>
+  {% endif %}
+
+  <h2 class="text-xl font-semibold">Past</h2>
+  {% if past %}
+    <div class="overflow-x-auto">
+      <table class="table table-zebra opacity-80">
+        <thead>
+          <tr>
+            <th>Facility</th>
+            <th>Surface</th>
+            <th>Date & time</th>
+            <th>Organization</th>
+            <th>Sport</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in past %}
+            <tr>
+              <td>{{ b.slot.ice_surface.facility.name }}</td>
+              <td>{{ b.slot.ice_surface.name }}</td>
+              <td>{{ b.slot.start|date:"M j, Y" }} {{ b.slot.start|time }}–{{ b.slot.end|time }}</td>
+              <td>{{ b.organization_name|default:"—" }}</td>
+              <td>{{ b.get_sport_display }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="opacity-80">No past bookings.</p>
+  {% endif %}
+
+  <p><a href="{% url 'customers:search' %}" class="btn btn-primary">Find ice time</a></p>
+</div>
+{% endblock %}

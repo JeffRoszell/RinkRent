@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Hours – {{ surface.name }} – RinkRent{% endblock %}
+{% block content %}
+<div class="flex flex-col gap-4">
+  <div class="flex flex-wrap justify-between items-center gap-2">
+    <h1 class="text-3xl font-bold">Hours of operation – {{ surface.name }}</h1>
+    <div class="flex gap-2">
+      <a href="{% url 'facilities:hours_bulk' surface.pk %}" class="btn btn-primary">Set weekly hours</a>
+      <a href="{% url 'facilities:hours_create' surface.pk %}" class="btn btn-ghost">Add single day</a>
+    </div>
+  </div>
+  <p class="opacity-80">Set open/close times per weekday. Use “Set weekly hours” to pick multiple days and drag the time range, or add one day at a time.</p>
+
+  <div class="overflow-x-auto">
+    <table class="table table-zebra">
+      <thead>
+        <tr>
+          <th>Day</th>
+          <th>Open</th>
+          <th>Close</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in hours %}
+          <tr>
+            <td>{{ h.get_weekday_display }}</td>
+            <td>{{ h.open_time }}</td>
+            <td>{{ h.close_time }}</td>
+            <td>
+              <a href="{% url 'facilities:hours_edit' surface.pk h.pk %}" class="btn btn-ghost btn-sm">Edit</a>
+              <a href="{% url 'facilities:hours_delete' surface.pk h.pk %}" class="btn btn-ghost btn-sm text-error">Delete</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4">No hours set. Add at least one day to generate slots.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p><a href="{% url 'facilities:surface_list' %}" class="link">Back to surfaces</a></p>
+</div>
+{% endblock %}

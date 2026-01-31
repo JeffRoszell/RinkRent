@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Ice surfaces – RinkRent{% endblock %}
+{% block content %}
+<div class="flex flex-col gap-4">
+  <div class="flex justify-between items-center">
+    <h1 class="text-3xl font-bold">Ice surfaces</h1>
+    <a href="{% url 'facilities:surface_create' %}" class="btn btn-primary">Add surface</a>
+  </div>
+  <p class="opacity-80">Manage surfaces, hours of operation, and default rates. Run "Generate slots" (cron or command) to create bookable slots from hours.</p>
+
+  <div class="overflow-x-auto">
+    <table class="table table-zebra">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Order</th>
+          <th>Rate/slot</th>
+          <th>Hours</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in surfaces %}
+          <tr>
+            <td>{{ s.name }}</td>
+            <td>{{ s.display_order }}</td>
+            <td>${{ s.default_rate }}</td>
+            <td>
+              <a href="{% url 'facilities:hours_list' s.pk %}" class="link">
+                {{ s.hours_of_operation.count }} days
+              </a>
+            </td>
+            <td class="flex gap-2">
+              <a href="{% url 'facilities:surface_edit' s.pk %}" class="btn btn-ghost btn-sm">Edit</a>
+              <a href="{% url 'facilities:surface_delete' s.pk %}" class="btn btn-ghost btn-sm text-error">Delete</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">No surfaces yet. Add one to get started.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

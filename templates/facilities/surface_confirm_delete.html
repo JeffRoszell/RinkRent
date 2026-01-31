@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ surface.name }} – RinkRent{% endblock %}
+{% block content %}
+<div class="max-w-md card bg-base-200 shadow">
+  <div class="card-body">
+    <h2 class="card-title text-error">Delete surface?</h2>
+    <p>This will delete <strong>{{ surface.name }}</strong> and all its slots, hours, and reservations. This cannot be undone.</p>
+    <form method="post" class="card-actions justify-end mt-4">
+      {% csrf_token %}
+      <a href="{% url 'facilities:surface_list' %}" class="btn btn-ghost">Cancel</a>
+      <button type="submit" class="btn btn-error">Delete</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Delete hours – RinkRent{% endblock %}
+{% block content %}
+<div class="max-w-md card bg-base-200 shadow">
+  <div class="card-body">
+    <h2 class="card-title text-error">Remove hours?</h2>
+    <p>{{ surface.name }} – {{ hours.get_weekday_display }} {{ hours.open_time }}–{{ hours.close_time }}</p>
+    <form method="post" class="card-actions justify-end mt-4">
+      {% csrf_token %}
+      <a href="{% url 'facilities:hours_list' surface.pk %}" class="btn btn-ghost">Cancel</a>
+      <button type="submit" class="btn btn-error">Remove</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

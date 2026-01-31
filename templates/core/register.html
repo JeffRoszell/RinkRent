@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Sign up – RinkRent{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto card bg-base-200 shadow-xl">
+  <div class="card-body">
+    <h2 class="card-title">Sign up to book ice</h2>
+    <p class="text-sm opacity-80">Create an account to search rinks and book ice time for your team or organization.</p>
+    <form method="post" action="{% url 'core:register' %}">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-control w-full">
+          <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<p class="text-sm opacity-70">{{ field.help_text }}</p>{% endif %}
+          {% if field.errors %}<p class="text-error text-sm">{{ field.errors.0 }}</p>{% endif %}
+        </div>
+      {% endfor %}
+      <div class="form-control mt-4">
+        <button type="submit" class="btn btn-primary">Sign up</button>
+      </div>
+    </form>
+    <p class="text-sm mt-4">Already have an account? <a href="{% url 'core:login' %}" class="link">Log in</a></p>
+    <p class="text-sm opacity-80">Manage a rink? <a href="{% url 'facilities:register' %}" class="link">Register your rink</a></p>
+  </div>
+</div>
+{% endblock %}

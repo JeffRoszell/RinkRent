@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Register your rink – RinkRent{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto card bg-base-200 shadow-xl">
+  <div class="card-body">
+    <h2 class="card-title">Register your rink</h2>
+    <p class="text-sm opacity-80">Create an account to manage your facility, set hours, and receive bookings.</p>
+    <form method="post" action="{% url 'facilities:register' %}" autocomplete="on">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-control w-full mt-2">
+          <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<p class="text-sm opacity-70">{{ field.help_text }}</p>{% endif %}
+          {% if field.errors %}<p class="text-error text-sm">{{ field.errors.0 }}</p>{% endif %}
+        </div>
+      {% endfor %}
+      {% include "components/address_autocomplete.html" with mapbox_access_token=mapbox_access_token %}
+      <div class="form-control mt-4">
+        <button type="submit" class="btn btn-primary">Create rink account</button>
+      </div>
+    </form>
+    <p class="text-sm mt-4 opacity-80">Already have a rink account? <a href="{% url 'core:login' %}" class="link">Log in</a></p>
+    <p class="text-sm opacity-80">Looking to book ice? <a href="{% url 'core:register' %}" class="link">Sign up as customer</a></p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{% if hours %}Edit{% else %}Add{% endif %} hours – RinkRent{% endblock %}
+{% block content %}
+<div class="max-w-lg">
+  <h1 class="text-2xl font-bold mb-4">{% if hours %}Edit hours{% else %}Add hours of operation{% endif %} – {{ surface.name }}</h1>
+  <form method="post" class="card bg-base-200 shadow">
+    <div class="card-body">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-control{% if field.name == 'open_time' or field.name == 'close_time' %} flex flex-wrap items-end gap-2{% endif %}">
+          <label class="label{% if field.name == 'open_time' or field.name == 'close_time' %} w-full{% endif %}" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          <div class="flex gap-2 flex-wrap">{{ field }}</div>
+          {% if field.errors %}<p class="text-error text-sm w-full">{{ field.errors.0 }}</p>{% endif %}
+        </div>
+      {% endfor %}
+      <div class="card-actions justify-end mt-4">
+        <a href="{% url 'facilities:hours_list' surface.pk %}" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
