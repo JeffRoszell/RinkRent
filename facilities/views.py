@@ -14,6 +14,7 @@ from bookings.notifications import notify_booking_modified_by_facility, notify_b
 from bookings.services import ensure_slots_for_date, get_facility_tz, release_slot
 from core.decorators import facility_manager_required
 from facilities.forms import (
+    AddHoursForm,
     BulkHoursForm,
     FacilityForm,
     FacilityRegisterForm,
@@ -222,6 +223,13 @@ def hours_bulk(request, surface_pk):
     )
 
 
+def _add_hours_initial():
+    """Default initial for AddHoursForm (no days selected, 6:00–22:00)."""
+    from datetime import time
+
+    return {"open_time": time(6, 0), "close_time": time(22, 0)}
+
+
 @facility_manager_required
 @require_http_methods(["GET", "POST"])
 def hours_create(request, surface_pk):
@@ -230,19 +238,26 @@ def hours_create(request, surface_pk):
         return redirect("core:home")
     surface = get_object_or_404(IceSurface, pk=surface_pk, facility=facility)
     if request.method == "POST":
-        form = HoursOfOperationForm(request.POST)
+        form = AddHoursForm(request.POST, surface=surface)
         if form.is_valid():
-            h = form.save(commit=False)
-            h.ice_surface = surface
-            h.save()
-            messages.success(request, "Hours added.")
+            form.save()
+            messages.success(request, "Hours applied to selected days.")
             return redirect("facilities:hours_list", surface_pk=surface.pk)
     else:
-        form = HoursOfOperationForm()
+        form = AddHoursForm(initial=_add_hours_initial(), surface=surface)
+    weekday_fields = [
+        (form[f"day_{i}"], label) for i, (_, label) in enumerate(HoursOfOperation.WEEKDAYS)
+    ]
     return render(
         request,
         "facilities/hours_form.html",
-        {"form": form, "facility": facility, "surface": surface},
+        {
+            "form": form,
+            "facility": facility,
+            "surface": surface,
+            "weekday_fields": weekday_fields,
+            "add_flow": True,
+        },
     )
 
 

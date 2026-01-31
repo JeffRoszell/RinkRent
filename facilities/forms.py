@@ -328,6 +328,57 @@ class HoursOfOperationForm(forms.ModelForm):
         }
 
 
+class AddHoursForm(forms.Form):
+    """Add or update hours for multiple selected days with one open/close time range."""
+
+    open_time = forms.TimeField(
+        widget=TimeSelect30Widget(attrs={"class": "select select-bordered w-full", "id": "id_open_time"}),
+    )
+    close_time = forms.TimeField(
+        widget=TimeSelect30Widget(attrs={"class": "select select-bordered w-full", "id": "id_close_time"}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.surface = kwargs.pop("surface", None)
+        super().__init__(*args, **kwargs)
+        for field_name, label in _bulk_hours_day_fields():
+            self.fields[field_name] = forms.BooleanField(
+                required=False,
+                label=label,
+                widget=forms.CheckboxInput(attrs={"class": "checkbox checkbox-primary add-day"}),
+            )
+
+    def clean(self):
+        data = super().clean()
+        open_t = data.get("open_time")
+        close_t = data.get("close_time")
+        any_day = any(data.get(f"day_{i}") for i in range(7))
+        if any_day:
+            if not open_t or not close_t:
+                self.add_error(None, "Enter open and close times when days are selected.")
+            elif open_t >= close_t:
+                self.add_error("close_time", "Close time must be after open time.")
+        else:
+            self.add_error(None, "Select at least one day.")
+        return data
+
+    def save(self):
+        surface = self.surface
+        if not surface:
+            return
+        open_t = self.cleaned_data.get("open_time")
+        close_t = self.cleaned_data.get("close_time")
+        if not open_t or not close_t:
+            return
+        for i in range(7):
+            if self.cleaned_data.get(f"day_{i}"):
+                HoursOfOperation.objects.update_or_create(
+                    ice_surface=surface,
+                    weekday=i,
+                    defaults={"open_time": open_t, "close_time": close_t},
+                )
+
+
 def _bulk_hours_day_fields():
     """Generate (field_name, label) for each weekday for BulkHoursForm."""
     for i, (_, label) in enumerate(HoursOfOperation.WEEKDAYS):

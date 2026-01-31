@@ -47,7 +47,7 @@
               {% if slot.state == "available" %}
                 <label class="slot-option cursor-pointer">
                   <input type="checkbox" name="slot" value="{{ slot.pk }}" class="slot-checkbox peer sr-only">
-                  <div class="card bg-primary text-primary-content shadow hover:shadow-md transition peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-offset-base-100 peer-checked:ring-4 peer-checked:ring-secondary">
+                  <div class="card bg-primary text-primary-content shadow hover:shadow-md transition peer-checked:ring-4 peer-checked:ring-black peer-checked:ring-offset-2 peer-checked:ring-offset-base-100 peer-checked:bg-neutral peer-checked:text-neutral-content peer-checked:shadow-xl peer-checked:scale-[1.02]">
                     <div class="card-body py-2 px-4 flex flex-row items-center justify-between gap-2">
                       <span class="font-medium">{{ slot.start|time }}–{{ slot.end|time }}</span>
                       <span class="text-sm opacity-90">${{ slot.rate }}</span>

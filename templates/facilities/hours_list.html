@@ -6,10 +6,10 @@
     <h1 class="text-3xl font-bold">Hours of operation – {{ surface.name }}</h1>
     <div class="flex gap-2">
       <a href="{% url 'facilities:hours_bulk' surface.pk %}" class="btn btn-primary">Set weekly hours</a>
-      <a href="{% url 'facilities:hours_create' surface.pk %}" class="btn btn-ghost">Add single day</a>
+      <a href="{% url 'facilities:hours_create' surface.pk %}" class="btn btn-ghost">Add hours</a>
     </div>
   </div>
-  <p class="opacity-80">Set open/close times per weekday. Use “Set weekly hours” to pick multiple days and drag the time range, or add one day at a time.</p>
+  <p class="opacity-80">Set open/close times per weekday. Use “Set weekly hours” to replace all days at once, or “Add hours” to apply one time range to selected days (other days unchanged).</p>
 
   <div class="overflow-x-auto">
     <table class="table table-zebra">
